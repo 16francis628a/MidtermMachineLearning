@@ -309,7 +309,7 @@ f. Curva ROC de 0.7986 significa que sí tomas¿mos al azar un nacimiento que re
 
 ![image.png](data/output4.png)
 
-La explicación de que la mayoria de metricas esten cerca del 0.73 se explica por el balance de la variable objetivo:
+La explicación de que la mayoria de metricas esten cerca del 0.73 se explica por el balance de la variable objetivo
 
 **tipo_parto**
 
