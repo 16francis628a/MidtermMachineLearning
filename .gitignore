@@ -1,0 +1,11 @@
+/.entornoML
+/.venv
+/Codigos
+/Datacamp
+/Tareas_Oficina
+/.quarto/
+**/*.quarto_ipynb
+/_quarto.yml
+/qadro.ipynb
+/_site
+/requirements.txt

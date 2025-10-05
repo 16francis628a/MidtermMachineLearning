@@ -1,0 +1,322 @@
+---
+title: 'Midterm Machine Learning'
+author: 'Francisco Areyuna'
+date: '10-04-2024'
+format: 'html'
+---
+
+# Regresión Lineal
+
+Combined Cycle Power Plant
+
+
+![image.png](data/planta1.jpg)
+
+El conjunto de datos contiene 9568 puntos de datos recopilados de una Planta de Energía de Ciclo Combinado (CCPP) durante 6 años (2006-2011), cuando la planta de energía funcionaba a plena carga. Las características consisten en las variables ambientales promedio por hora: Temperatura (AT), Presión Ambiental (AP), Humedad Relativa (RH) y Vacío de Escape (V), para predecir la producción neta de energía eléctrica por hora (PE) de la planta.
+
+Una planta de energía de ciclo combinado (CCPP) se compone de turbinas de gas (GT), turbinas de vapor (ST) y generadores de vapor por recuperación de calor. En una CCPP, la electricidad se genera mediante turbinas de gas y vapor, que se combinan en un solo ciclo, y se transfiere de una turbina a otra. Mientras que el Vacío se recoge de la turbina de vapor y tiene un efecto sobre ella, las otras tres variables ambientales afectan el rendimiento de la turbina de gas.
+
+
+## 1. Carga y exploración inicial del dataset
+
+Se realiza un descripción de las variables y de la variable objetivo (Target)
+
+|Variable Name	|Role	    |Type	    |Description	|Units	|
+|---------------|-----------|-----------|---------------|-------|
+|AT             |Feature	|Continuous	|en el rango 1.81°C and 37.11°C	|C	|
+|V|	    Feature	|Continuous	|en el rango 25.36-81.56 cm Hg	|cm Hg	|
+|AP|	Feature	|Continuous	|en el rango 992.89-1033.30 milibar	|milibar	|
+|RH|	Feature	|Continuous	|en el rango 25.56% a 100.16%	|%	|
+|PE|	Target	|Continuous	|420.26-495.76 MW	|MW	|
+
+
+```{python}
+
+# Importamos los paquetes necesarios
+from sklearn.linear_model import LinearRegression # Regresión lineal con scikit-learn
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import numpy as np
+
+import altair as alt
+import pandas as pd
+
+MW_df = pd.read_csv(r'data\Ciclo_conbinado.csv', delimiter=';', encoding='latin-1')
+
+MW_df.head()
+
+
+```
+
+Principales estadisticas:
+
+```{python}
+MW_df.describe()
+
+```
+
+Matriz de correlación entre las diferentes variables
+
+```{python}
+matriz_correlacion = MW_df.corr(method='pearson')
+
+plt.figure(figsize=(10, 8))
+
+sns.heatmap(
+    matriz_correlacion,
+    annot=True,          # Muestra el valor de correlación en cada celda
+    fmt='.2f',           # Dos decimales
+    cmap='coolwarm',     # Esquema de color divergente (rojo para positivo, azul para negativo)
+    linewidths=.5,       
+    cbar_kws={'label': 'Coeficiente de Correlación'} 
+)
+
+plt.title('Matriz de Correlación de Combined Cycle Power Plant', fontsize=16)
+plt.show()
+
+```
+
+Variables con una alta correlación positiva. Es decir, mientras una variable aumenta la otra variable aumenta:
+
+* V vs AT (0.84)
+
+Variables con una alta correlación negativa. Es decir, mientras una variable aumenta la otra variable disminuye:
+
+* RH vs AT (-0.54)
+* AP vs AT (-0.51)
+
+Variables con una alta correlación con la variable objetivo PE (MW):
+
+* PE vs AT (-0.95) negativa
+* PE vs V (-0.87) negativa
+* AP vs PE (0.52) positiva
+
+
+```{python}
+
+alt.data_transformers.disable_max_rows()
+
+numerical_columns = MW_df.select_dtypes('number').columns.tolist()
+
+alt.Chart(MW_df).mark_rect().encode(
+    alt.X(alt.repeat('column'),type='quantitative',bin=alt.Bin(maxbins=30)),
+    alt.Y(alt.repeat('row'),type='quantitative',bin=alt.Bin(maxbins=30)),
+    alt.Color('count()'),
+    alt.Tooltip('count()')
+).properties(
+    width=100,
+    height=100
+).repeat(
+    column=numerical_columns,
+    row=numerical_columns
+).resolve_scale(
+    color='independent'
+)
+
+```
+
+Se observa con mayor claridad en el Heatmap Matrix las relaciones presentadas en la matriz de correlación.
+
+Especialmente, PE vs AT (-0.95), V vs AT (0.84) y PE vs V (-0.87).
+
+```{python}
+heatmap_scatter = alt.Chart(MW_df).mark_rect().encode(
+    alt.X('AT', bin=alt.Bin(maxbins=100)),
+    alt.Y('PE', bin=alt.Bin(maxbins=100)),
+    alt.Color('count()'),
+    alt.Tooltip('count()')
+).properties(
+    title="Binned Heatmap: AT vs PE"
+)
+
+heatmap_scatter
+```
+
+## 2. División en conjuntos de entrenamiento y prueba (train_test_split)
+
+```{python}
+for col in MW_df.columns:
+    MW_df[col] = pd.to_numeric(MW_df[col], errors='coerce')
+MW_df = MW_df.dropna()
+```
+
+```{python}
+
+from sklearn.model_selection import train_test_split
+
+X = MW_df.drop('PE', axis=1) # Predictoras
+y = MW_df['PE']  
+
+
+# Dividimos directamente, usando el 70% para entrenamiento y 30% para prueba.
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, 
+    test_size=0.3, # 30% para prueba
+    random_state=42
+)
+
+print(f'Dimensiones de X_train (Entrenamiento): {X_train.shape}')
+print(f'Dimensiones de X_test (Prueba): {X_test.shape}\n')
+
+```
+
+
+## 3. Definición y entrenamiento del modelo utilizando Pipeline
+
+```{python}
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Pipeline: Estandarización de los datos y Regresión Lineal
+pipe = Pipeline([
+    ('scaler', StandardScaler()),
+    ('regressor', LinearRegression())
+])
+
+# Entrenamiento del modelo con el conjunto de ENTRENAMIENTO
+pipe.fit(X_train, y_train)
+
+# Evaluación en el Conjunto de PRUEBA (X_test)
+y_pred_test = pipe.predict(X_test)
+
+
+```
+
+
+## 4. Generación de predicciones
+
+Se realizara una nueva predicción con nuevos datos nunca vistos:
+
+|Variable       |Valor	        |
+|---------------|---------------|
+|AT             |25.5 °C	    |
+|V              |51.1 cm-hg	    |
+|AP             |995.6 milibar	|
+|RH             |52.2 %	        |
+
+```{python}
+
+# Definimos un nuevo caso de prueba con los siguientes valores
+nuevo_caso = pd.DataFrame({
+    'AT': [25.5],     # Temperatura
+    'V': [51.1],       # Exhaust Vacuum
+    'AP': [995.6],      # Ambient Pressure
+    'RH': [52.2],     # Relative Humidity
+    })
+
+# Realizamos la predicción con el nuevo caso de prueba
+prediccion = pipe.predict(nuevo_caso)
+
+# Imprimimos el resultado de la predicción
+print(f'La potencia entregada [MW] estimada es: {prediccion[0]:.2f} MW')
+
+
+```
+
+
+## 5. Evaluación del modelo con métricas apropiadas
+
+```{python}
+
+# Calcular métricas de evaluación
+r2_test = r2_score(y_test, y_pred_test)
+mse_test = mean_squared_error(y_test, y_pred_test)
+rmse_test = mse_test ** 0.5 
+
+# ----------------------------------------------------------------------
+# Mostrar Resultados
+# ----------------------------------------------------------------------
+
+print('EVALUACIÓN FINAL DEL MODELO EN CONJUNTO DE PRUEBA (X_test)')
+print(f'Modelo: Regresión Lineal (entrenado con {X_train.shape}')
+print(f'Número de muestras en el conjunto de Prueba: {X_test.shape}')
+
+print(f'* R² Score (Coeficiente de Determinación): {r2_test:.4f}')
+print(f'* Error Cuadrático Medio (MSE): {mse_test:.3f}')
+print(f'* Raíz del Error Cuadrático Medio (RMSE): {rmse_test:.3f}')
+
+
+
+
+```
+
+
+## 5. Visualizaciones e interpretación de resultados
+
+
+```{python}
+
+# Graficamos los valores reales vs los valores predichos
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test, y_pred_test, color='blue', alpha=0.7, s=10)
+plt.title('Potencia real vs. Potencia predicha')
+plt.xlabel('Valores reales')
+plt.ylabel('Valores predichos')
+plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')  # Línea de referencia
+plt.legend(['Valores predichos', 'Línea de referencia'])
+plt.show()
+
+```
+
+```{python}
+
+from sklearn.model_selection import learning_curve
+from sklearn.metrics import mean_squared_error
+
+
+train_sizes, train_scores, test_scores = learning_curve(
+    estimator=pipe, 
+    X=X_train,         
+    y=y_train,
+    train_sizes=np.linspace(0.1, 1.0, 10),  # 10 puntos de muestra de tamaño de datos
+    cv=5,                                   # 5-Fold Cross-Validation interna
+    scoring='neg_mean_squared_error',
+    n_jobs=1,
+    random_state=42
+)
+
+
+train_mse = -train_scores.mean(axis=1)
+test_mse = -test_scores.mean(axis=1)
+
+
+plt.figure(figsize=(10, 6))
+
+plt.plot(train_sizes, train_mse, 'o-', color='blue', label='Error de Entrenamiento (MSE)')
+plt.plot(train_sizes, test_mse, 'o-', color='green', label='Error de Validación Cruzada (MSE)')
+
+
+plt.title('Curva de Aprendizaje para Regresión Lineal', fontsize=14)
+plt.xlabel('Tamaño del Conjunto de Entrenamiento', fontsize=12)
+plt.ylabel('Error Cuadrático Medio (MSE)', fontsize=12)
+plt.ylim(0, max(max(train_mse), max(test_mse)) * 1.1) 
+plt.legend(loc='best')
+plt.grid(True, linestyle=':', alpha=0.7)
+
+plt.show()
+
+```
+
+## 6. Resultados obtenidos
+
+
+Las métricas del modelo es definen al modelo con una alta precisión:
+
+a. R² Score de 0.9275 es alto donde la varianza de la variable objetivo (PE) se explica muy bien por parte las varibales predictoras (AT, V, AP, RH). Esto se confirma por la matriz de correlación.
+
+b. Error Cuadrático Medio (MSE) de 21.240 MW² mide el promedio de errores al cuadrado. Para contextualizar mejor este dato se observara Raíz del Error Cuadrático Medio (RMSE).
+
+c. Raíz del Error Cuadrático Medio (RMSE) de 4.609 MW es error promedio. Esto significa que los valores predichos se desvian un 4.609 MW de la linea de referencia. Como se muestra en la gráfica Potencia Real vs. Potencia predicha los valores predichos (puntos azules) se agrlomeran cerca de la linea de referencia (linea entrecortada roja). Mientras mas cerca se agrupen los valores predichos a las linea de referencia el RMSE se acercaria a cero.
+
+![image.png](data/output1.png)
+
+
+COn un R² Score de 0.9275 se observa en la figura de la curva de aprendizaje, la curva Error de Entrenamiento (MSE) aumenta a medida que se entrena el modelo con mayor cantidad de muestras. A partir de 1700 muestras el valor se incrementa y comienza a estabilizarce con el calculo del Error de Validación Cruzada. Ambas lineas a partir de 2700 comienzan a converger y a sobreponerse. Esto es de esperarse con el valor de R² Score de 0.9275 y se mantiene hasta el final de l entraamiento cuando llega a definirse el modelo con las 6697 observaciones.
+
+![image.png](data/output2.png)
+
+

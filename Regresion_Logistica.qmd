@@ -1,0 +1,318 @@
+---
+title: 'Midterm Machine Learning'
+author: 'Francisco Areyuna'
+date: '04-10-2024'
+format: 'html'
+---
+
+# Regresión Logistica
+
+INEC_NACIDOSVIVOS_2024.csv
+
+Instituto Nacional de Estadística y Censos
+
+Base de datos del Registro Estadístico de Nacido Vivo 2024
+
+https://datosabiertos.gob.ec/dataset/registro-estadistico-de-nacido-vivo-2024/resource/df82df80-029d-49b1-9825-cd03121939e3
+
+
+![image.png](data/maternidad.jpg)
+
+El conjunto de datos contiene 217986 observaciones del año 2024. Al no existir una variable declarada de antemano como target. Se opto utilizar como variable objetivo "tipo_parto". Cuya varible posee dos opciones: "Normal" o "Cesarea". 
+
+Se realizara una exploración de las variables y definir como estas se relacionan con el target seleccionado.
+
+
+## 1. Carga y exploración inicial del dataset
+
+Se realiza un descripción de las variables y de la variable objetivo (Target)
+
+```{python}
+
+import pandas as pd
+import numpy as np
+import altair as alt
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score
+
+nacidos_df = pd.read_csv(r'data\inec_nacidos_vivos_2024.csv', delimiter=';', encoding='latin-1')
+
+alt.data_transformers.disable_max_rows()
+
+nacidos_df.head()
+
+
+```
+
+### Principales estadisticas:
+
+Se revisa si existe sesgo en la variable target. Las variables predictoras oscilan muy cerca del 50% por lo que se concluye que no existe sesgo en el dataset.
+```{python}
+conteo_clases = nacidos_df['tipo_parto'].value_counts()/nacidos_df.shape[0]
+print("\nConteo de Frecuencia por Clase:")
+print(conteo_clases)
+```
+
+Se visualiza las cantidad de datos nulos en el dataset.
+```{python}
+# Contar la cantidad de valores nulos por columna
+print("--- Cantidad de valores nulos por columna ---")
+valores_nulos = nacidos_df.isnull().sum()
+print(valores_nulos)
+
+# Contar la cantidad de valores con el texto 'Sin información' (que parece ser un valor nulo en este dataset)
+print("\n--- Cantidad de valores 'Sin información' por columna ---")
+sin_informacion = (nacidos_df == 'Sin información').sum()
+print(sin_informacion)
+
+```
+
+La graficas muestran que las variables no poseen una correlación uniforme. Es decir, no existe una correlación importante que explique el comportamiento de la variable objetivo ('tipo_parto')
+```{python}
+numerical_columns = nacidos_df.select_dtypes('number').columns.tolist()
+
+alt.Chart(nacidos_df).mark_rect().encode(
+    alt.X(alt.repeat('column'),type='quantitative',bin=alt.Bin(maxbins=30)),
+    alt.Y(alt.repeat('row'),type='quantitative',bin=alt.Bin(maxbins=30)),
+    alt.Color('count()'),
+    alt.Tooltip('count()')
+).properties(
+    width=100,
+    height=100
+).repeat(
+    column=numerical_columns,
+    row=numerical_columns
+).resolve_scale(
+    color='independent'
+)
+```
+
+
+## 2. División en conjuntos de entrenamiento y prueba (train_test_split).
+
+Antes de realizar cualquier transformación en el dataset vamos a separar el grupo de entrenamiento y prueba:
+
+```{python}
+# Tratamos los valores 'tipo_parto'
+le = LabelEncoder()
+nacidos_df['tipo_parto_cod'] = le.fit_transform(nacidos_df['tipo_parto'].astype(str))
+
+print("Mapeo de Codificación (Valor original : Valor numérico):")
+mapeo_parto = dict(zip(le.classes_, le.transform(le.classes_)))
+print(f"*'tipo_parto_cod'--{mapeo_parto}")
+
+```
+
+```{python}
+# Definición de X e y
+y = nacidos_df['tipo_parto_cod']
+X = nacidos_df.drop(columns=['tipo_parto_cod', 'tipo_parto', 'fecha_nacimiento'])
+```
+
+Preparamos dos pipelines para tratar los valores faltantes en las variables numericas y categoricas:
+
+* caracteristicas_mumericas = ['talla', 'peso', 'sem_gestacion', 'anio_nacimiento', 'dia_nacimiento']
+* caracteristicas_categoricas = ['sexo', 'mes_nacimiento', 'lugar_ocurrido', 'area_nacimiento', 'etnia', 'estado_civil', 'nivel_instruccion']
+
+
+## 3. Definición y entrenamiento del modelo utilizando Pipeline.
+
+```{python}
+
+# Definición de tipos de columnas numericas y categiricas
+caracteristicas_mumericas = ['talla', 'peso', 'sem_gestacion', 'anio_nacimiento', 'dia_nacimiento']
+caracteristicas_categoricas = ['sexo', 'mes_nacimiento', 'lugar_ocurrido', 'area_nacimiento', 'etnia', 'estado_civil', 'nivel_instruccion']
+
+# Pipeline para Datos Numericos
+transform_numerica = Pipeline(steps=[
+    # Reemplazar la cadena 'Sin información' por NaN para imputación numérica
+    ('str_imputer', SimpleImputer(missing_values='Sin información', strategy='constant', fill_value=np.nan)),
+    # Imputar NaN con la mediana
+    ('num_imputer', SimpleImputer(strategy='median')),
+    # Escalar
+    ('scaler', StandardScaler())
+])
+
+# Pipeline para Datos Categoricos
+transform_categorica = Pipeline(steps=[
+    # Reemplazar 'Sin información' con 'Desconocido'
+    ('str_imputer', SimpleImputer(missing_values='Sin información', strategy='constant', fill_value='Desconocido')),
+    # Imputar cualquier otro nulo con la moda
+    ('cat_imputer', SimpleImputer(strategy='most_frequent')),
+    # Codificar con One-Hot Encoding
+    ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
+
+# ColumnTransformer combinamos todos los pipelines
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', transform_numerica, caracteristicas_mumericas),
+        ('cat', transform_categorica, caracteristicas_categoricas)
+    ],
+    remainder='drop'    # Eliminamos todas las columnas que no van a ser tratadas por pipeline
+)
+```
+
+Uso de train_test_split para separar el dataset en entrenamiento y prueba:
+
+```{python}
+# --- División de Datos ---
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Pipeline Final (ColumnTransform + Modelo)
+log_reg_pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', LogisticRegression(random_state=42, max_iter=2000))
+])
+
+# Entrenamiento
+log_reg_pipeline.fit(X_train, y_train)
+
+```
+
+## 4. Generación de predicciones.
+
+```{python}
+# Predicción
+y_pred = log_reg_pipeline.predict(X_test)
+```
+
+## 5. Evaluación del modelo con métricas apropiadas.
+
+```{python}
+
+accuracy = accuracy_score(y_test, y_pred)
+
+print(f"Precisión (Accuracy) en el conjunto de prueba: {accuracy:.4f}")
+
+print("Reporte de Clasificación:")
+print(classification_report(y_test, y_pred))
+```
+
+
+
+
+
+
+
+## 6. Visualizaciones e interpretación de resultados
+
+Matriz de confución:
+
+```{python}
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+
+cm = confusion_matrix(y_test, y_pred)
+
+# 'le' fue el LabelEncoder que codificó 'tipo_parto'
+clases = le.classes_ 
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(
+    cm,
+    annot=True,          # Mostrar los valores numéricos en las celdas
+    fmt='d',             # Formato decimal (para números enteros)
+    cmap='Blues',        # Escala de color
+    xticklabels=clases,  # Etiquetas del eje X (Predichas)
+    yticklabels=clases,  # Etiquetas del eje Y (Reales)
+    cbar=False           
+)
+plt.title('Matriz de Confusión del Modelo de Regresión Logística', fontsize=14)
+plt.ylabel('Valores Reales (True Label)', fontsize=12)
+plt.xlabel('Valores Predichos (Predicted Label)', fontsize=12)
+plt.show()
+```
+
+Curva ROC.
+
+```{python}
+from sklearn.metrics import roc_curve, auc
+
+# 1. Obtener las probabilidades de la clase positiva (Clase 1)
+# El método predict_proba devuelve las probabilidades para todas las clases.
+# Seleccionamos el índice [:, 1] que corresponde a la probabilidad de la clase positiva (1).
+y_probs = log_reg_pipeline.predict_proba(X_test)[:, 1]
+
+# 2. Calcular la Curva ROC
+# roc_curve devuelve: FPR (Tasa de Falsos Positivos), TPR (Tasa de Verdaderos Positivos), y Umbrales
+fpr, tpr, thresholds = roc_curve(y_test, y_probs)
+
+# 3. Calcular el Área Bajo la Curva (AUC)
+# El AUC es una métrica de resumen del rendimiento del clasificador.
+roc_auc = auc(fpr, tpr)
+
+print(f"Área Bajo la Curva (AUC): {roc_auc:.4f}")
+```
+
+```{python}
+
+# 4. Graficar la Curva ROC
+plt.figure(figsize=(8, 6))
+
+# Trazar la curva ROC principal
+plt.plot(
+    fpr, tpr, 
+    color='darkorange', 
+    lw=2, 
+    label=f'Curva ROC (área = {roc_auc:.4f})'
+)
+
+# Trazar la línea de referencia (Clasificador Aleatorio)
+plt.plot(
+    [0, 1], [0, 1], 
+    color='navy', 
+    lw=2, 
+    linestyle='--', 
+    label='Clasificador Aleatorio (área = 0.50)'
+)
+
+# Configuración del gráfico
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('Tasa de Falsos Positivos (FPR)', fontsize=12)
+plt.ylabel('Tasa de Verdaderos Positivos (TPR)', fontsize=12)
+plt.title('Curva ROC para Regresión Logística', fontsize=14)
+plt.legend(loc="lower right")
+plt.grid(True)
+plt.show()
+
+```
+
+
+## 6. Resultados obtenidos
+
+
+Las métricas del ML definen al modelo como moderada:
+
+a. Accuracy de 0.7312 es moderado. Es decir, de cada 100 nacimientos, el modelo predijo correctamente el tipo de parto de 73 de ellos.
+
+b. Precision de 0.74 mide el promedio de errores al cuadrado. Para contextualizar mejor este dato se observara Raíz del Error Cuadrático Medio (RMSE).
+
+c. Recall de 0.73 significa que e todos los nacimientos que realmente pertenecían a la Clase Positiva (Cesárea), el modelo logró identificar correctamente el 73%. 
+
+d. F1 Score de 0.73 indica que el modelo ha logrado un equilibrio sólido entre el Recall y Precision.
+
+e. Matriz de confusión determina que existen 3272 Verdaderos negativo y 8446 falsos negativos. En el contexto de este dataset y el objetivo de predecir si las variables describen la varianza de la variable objetibo (Tipo de parto: Norma o Cesárea) existe un gran numero de predicciones erroneas. 
+
+![image.png](data/output3.png)
+
+f. Curva ROC de 0.7986 significa que sí tomas¿mos al azar un nacimiento que resultó en la clase cesárea y un nacimiento que resultó normal, el modelo tiene una probabilidad del 79.86% de asignar una probabilidad más alta al nacimiento que realmente pertenece a cesárea.
+
+![image.png](data/output4.png)
+
+La explicación de que la mayoria de metricas esten cerca del 0.73 se explica por el balance de la variable objetivo:
+
+**tipo_parto**
+
+* Cesárea    50.9946 %
+* Normal     49.0054 %
+
