@@ -295,7 +295,7 @@ Las métricas del ML definen al modelo como moderada:
 
 a. Accuracy de 0.7312 es moderado. Es decir, de cada 100 nacimientos, el modelo predijo correctamente el tipo de parto de 73 de ellos.
 
-b. Precision de 0.74 mide el promedio de errores al cuadrado. Para contextualizar mejor este dato se observara Raíz del Error Cuadrático Medio (RMSE).
+b. Precision de 0.74 es moderado. Describe que la mayoria de predicciones estan cercanas al real. Analogo, al accuracy pero el valor para este caso es bajo.
 
 c. Recall de 0.73 significa que e todos los nacimientos que realmente pertenecían a la Clase Positiva (Cesárea), el modelo logró identificar correctamente el 73%. 
 
@@ -305,14 +305,23 @@ e. Matriz de confusión determina que existen 3272 Verdaderos negativo y 8446 fa
 
 ![image.png](data/output3.png)
 
-f. Curva ROC de 0.7986 significa que sí tomas¿mos al azar un nacimiento que resultó en la clase cesárea y un nacimiento que resultó normal, el modelo tiene una probabilidad del 79.86% de asignar una probabilidad más alta al nacimiento que realmente pertenece a cesárea.
+f. Curva ROC de 0.7986 significa que sí tomamos al azar un nacimiento que resultó en la clase cesárea y un nacimiento que resultó normal, el modelo tiene una probabilidad del 79.86% de asignar una probabilidad más alta al nacimiento que realmente pertenece a cesárea.
 
 ![image.png](data/output4.png)
 
-La explicación de que la mayoria de metricas esten cerca del 0.73 se explica por el balance de la variable objetivo
+El comportamiento de estas metricas y su valor moderado se atribuye a la correlación de las caracteristicas con la variable Target. En el EDA no existe una correlación suficientemente fuerte.
+
+Para mejorar estas metricas, se recomendaria realizar una ingenieria de caracteristicas sobre el dataset. Y generar o incorporara al dataset caracteristicas que aporten mas información en la etapa de entrenamiento. 
+
+Ademas, la explicación de que la mayoria de metricas esten cerca del 0.73 se explica por el balance de la variable objetivo.
 
 **tipo_parto**
 
-* Cesárea    50.9946 %
-* Normal     49.0054 %
+```{python}
+conteo_clases = nacidos_df['tipo_parto'].value_counts()/nacidos_df.shape[0]
+print("\nConteo de Frecuencia por Clase:")
+print(conteo_clases)
+```
+
+
 

@@ -274,7 +274,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<div id="b03ddb45" class="cell" data-execution_count="1">
+<div id="48fdede3" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importamos los paquetes necesarios</span></span>
@@ -354,7 +354,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Principales estadisticas:</p>
-<div id="e4e4c315" class="cell" data-execution_count="2">
+<div id="76577c9f" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>MW_df.describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -446,7 +446,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Matriz de correlación entre las diferentes variables</p>
-<div id="7f110874" class="cell" data-execution_count="3">
+<div id="5744445b" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>matriz_correlacion <span class="op">=</span> MW_df.corr(method<span class="op">=</span><span class="st">'pearson'</span>)</span>
@@ -488,7 +488,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>PE vs V (-0.87) negativa</li>
 <li>AP vs PE (0.52) positiva</li>
 </ul>
-<div id="9a170d0b" class="cell" data-execution_count="4">
+<div id="3ceedf90" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>alt.data_transformers.disable_max_rows()</span>
@@ -513,23 +513,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-display" data-execution_count="4">
 
 <style>
-  #altair-viz-3906a34d35e740d79f7b6ecbe3d6c110.vega-embed {
+  #altair-viz-ac282f00716044b18d5ab11f60b13311.vega-embed {
     width: 100%;
     display: flex;
   }
 
-  #altair-viz-3906a34d35e740d79f7b6ecbe3d6c110.vega-embed details,
-  #altair-viz-3906a34d35e740d79f7b6ecbe3d6c110.vega-embed details summary {
+  #altair-viz-ac282f00716044b18d5ab11f60b13311.vega-embed details,
+  #altair-viz-ac282f00716044b18d5ab11f60b13311.vega-embed details summary {
     position: relative;
   }
 </style>
-<div id="altair-viz-3906a34d35e740d79f7b6ecbe3d6c110"></div>
+<div id="altair-viz-ac282f00716044b18d5ab11f60b13311"></div>
 <script type="text/javascript">
   var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
   (function(spec, embedOpt){
     let outputDiv = document.currentScript.previousElementSibling;
-    if (outputDiv.id !== "altair-viz-3906a34d35e740d79f7b6ecbe3d6c110") {
-      outputDiv = document.getElementById("altair-viz-3906a34d35e740d79f7b6ecbe3d6c110");
+    if (outputDiv.id !== "altair-viz-ac282f00716044b18d5ab11f60b13311") {
+      outputDiv = document.getElementById("altair-viz-ac282f00716044b18d5ab11f60b13311");
     }
 
     const paths = {
@@ -583,7 +583,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Se observa con mayor claridad en el Heatmap Matrix las relaciones presentadas en la matriz de correlación.</p>
 <p>Especialmente, PE vs AT (-0.95), V vs AT (0.84) y PE vs V (-0.87).</p>
-<div id="4f952e09" class="cell" data-execution_count="5">
+<div id="6d29ccf9" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>heatmap_scatter <span class="op">=</span> alt.Chart(MW_df).mark_rect().encode(</span>
@@ -600,23 +600,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-display" data-execution_count="5">
 
 <style>
-  #altair-viz-d7da016c0afb4770b36bb61f5c58ff07.vega-embed {
+  #altair-viz-d2ed3c5351e0488fa704339802229301.vega-embed {
     width: 100%;
     display: flex;
   }
 
-  #altair-viz-d7da016c0afb4770b36bb61f5c58ff07.vega-embed details,
-  #altair-viz-d7da016c0afb4770b36bb61f5c58ff07.vega-embed details summary {
+  #altair-viz-d2ed3c5351e0488fa704339802229301.vega-embed details,
+  #altair-viz-d2ed3c5351e0488fa704339802229301.vega-embed details summary {
     position: relative;
   }
 </style>
-<div id="altair-viz-d7da016c0afb4770b36bb61f5c58ff07"></div>
+<div id="altair-viz-d2ed3c5351e0488fa704339802229301"></div>
 <script type="text/javascript">
   var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
   (function(spec, embedOpt){
     let outputDiv = document.currentScript.previousElementSibling;
-    if (outputDiv.id !== "altair-viz-d7da016c0afb4770b36bb61f5c58ff07") {
-      outputDiv = document.getElementById("altair-viz-d7da016c0afb4770b36bb61f5c58ff07");
+    if (outputDiv.id !== "altair-viz-d2ed3c5351e0488fa704339802229301") {
+      outputDiv = document.getElementById("altair-viz-d2ed3c5351e0488fa704339802229301");
     }
 
     const paths = {
@@ -671,7 +671,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="división-en-conjuntos-de-entrenamiento-y-prueba-train_test_split" class="level2">
 <h2 class="anchored" data-anchor-id="división-en-conjuntos-de-entrenamiento-y-prueba-train_test_split">2. División en conjuntos de entrenamiento y prueba (train_test_split)</h2>
-<div id="e93f11a5" class="cell" data-execution_count="6">
+<div id="cb4497ae" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col <span class="kw">in</span> MW_df.columns:</span>
@@ -679,7 +679,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>MW_df <span class="op">=</span> MW_df.dropna()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="f2ad34c2" class="cell" data-execution_count="7">
+<div id="c2814ae9" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
@@ -707,7 +707,7 @@ Dimensiones de X_test (Prueba): (2871, 4)
 </section>
 <section id="definición-y-entrenamiento-del-modelo-utilizando-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="definición-y-entrenamiento-del-modelo-utilizando-pipeline">3. Definición y entrenamiento del modelo utilizando Pipeline</h2>
-<div id="90703029" class="cell" data-execution_count="8">
+<div id="a9308b1a" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
@@ -758,7 +758,7 @@ Dimensiones de X_test (Prueba): (2871, 4)
 </tr>
 </tbody>
 </table>
-<div id="49e7f937" class="cell" data-execution_count="9">
+<div id="5e0d2080" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Definimos un nuevo caso de prueba con los siguientes valores</span></span>
@@ -782,7 +782,7 @@ Dimensiones de X_test (Prueba): (2871, 4)
 </section>
 <section id="evaluación-del-modelo-con-métricas-apropiadas" class="level2">
 <h2 class="anchored" data-anchor-id="evaluación-del-modelo-con-métricas-apropiadas">5. Evaluación del modelo con métricas apropiadas</h2>
-<div id="7d4cc870" class="cell" data-execution_count="10">
+<div id="c9ac19bd" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calcular métricas de evaluación</span></span>
@@ -814,7 +814,7 @@ Número de muestras en el conjunto de Prueba: (2871, 4)
 </section>
 <section id="visualizaciones-e-interpretación-de-resultados" class="level2">
 <h2 class="anchored" data-anchor-id="visualizaciones-e-interpretación-de-resultados">5. Visualizaciones e interpretación de resultados</h2>
-<div id="0b404c39" class="cell" data-execution_count="11">
+<div id="cc86da31" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Graficamos los valores reales vs los valores predichos</span></span>
@@ -835,7 +835,7 @@ Número de muestras en el conjunto de Prueba: (2871, 4)
 </div>
 </div>
 </div>
-<div id="543d94ee" class="cell" data-execution_count="12">
+<div id="ef4ea5e8" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> learning_curve</span>
